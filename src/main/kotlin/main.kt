@@ -1,4 +1,5 @@
 import dev.kord.core.Kord
+import dev.kord.core.behavior.reply
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -6,6 +7,8 @@ import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.github.cdimascio.dotenv.dotenv
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import kotlin.math.ceil
 
@@ -29,37 +32,46 @@ suspend fun onMessage(e: MessageCreateEvent) {
     val message = e.message
     val content = message.content
 
-    if (content.trim() == "money") {
+    if (content.trim() == "capital") {
         message.addReaction(ReactionEmoji.Unicode("⏳"))
 
         var final: String
 
         try {
-            val lines = provider
-                .map {
-                    val name = it.getProviderName()
-                    val rate = it.getExchangeRate("USD")
-                    val fee = it.getFee("USD")
-                    val minimum = it.getMinimumFee("USD")
+            val lines = MutableList(0) { Pair("", 0) }
+            coroutineScope {
+                provider.forEach {
+                    launch {
+                        val name = it.getProviderName()
+                        val rate = it.getExchangeRate("USD")
+                        val fee = it.getFee("USD")
+                        val minimum = it.getMinimumFee("USD")
 
-                    val total = ceil((rate * fee + rate).toDouble()).toInt()
-                    val format = DecimalFormat("##,###")
-                    var line = "**`$name`** : **`${format.format(rate)}`**  /  **`${format.format(total)}`**"
-                    if (minimum != 0) {
-                        line += " `(!)`"
+                        val total = ceil((rate * fee + rate).toDouble()).toInt()
+                        val format = DecimalFormat("##,###")
+                        var line = "**`$name`** : `${format.format(rate)}`  |  **`${format.format(total)}`**"
+                        if (minimum != 0) {
+                            line += " `(!)`"
+                        }
+                        lines.add(Pair(line, total))
                     }
-                    Pair(line, total)
                 }
-                .sortedBy { pair -> pair.second }
-                .map { pair -> pair.first }
-            final = lines.joinToString("\n")
+            }
+            val out = lines.sortedBy { pair -> pair.second }.map { pair -> pair.first }
+            final = out.joinToString("\n")
+            final = "Tỷ giá quy đổi từ **đồng bạc xanh tư bản** sang **tiền Đồng đế quốc** hiện tại như sau :" +
+                    "\n$final" +
+                    "\n\nCập nhật vào <t:${message.timestamp.toEpochMilliseconds() / 1000}:R>."
         } catch (e: Exception) {
-            final = e.message ?: "An exception was thrown, but without a message"
+            val msg = e.message ?: "(An exception was thrown, but without a message)"
+            final = "${e.javaClass.name}: $msg"
             println(e)
             println(e.stackTraceToString())
         }
         message.deleteReaction(ReactionEmoji.Unicode("⏳"))
-        message.channel.createMessage(final)
+        message.reply {
+            this.content = final
+        }
     }
 }
 
