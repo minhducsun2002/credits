@@ -13,7 +13,9 @@ import java.text.DecimalFormat
 import kotlin.math.ceil
 
 fun getToken(): String {
-    val dotenv = dotenv()
+    val dotenv = dotenv {
+        this.ignoreIfMissing = true
+    }
     val token = dotenv.get("DISCORD_TOKEN", "")
     val env = System.getenv("DISCORD_TOKEN") ?: ""
     return if (token == "") env else token
