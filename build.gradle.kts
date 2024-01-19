@@ -9,6 +9,16 @@ repositories {
     mavenCentral()
 }
 
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
+    configurations["compileClasspath"].forEach { file: File ->
+        from(zipTree(file.absoluteFile))
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencies {
     testImplementation(kotlin("test"))
     implementation("dev.kord:kord-core:0.12.0")
