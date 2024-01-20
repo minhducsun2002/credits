@@ -16,6 +16,9 @@ tasks.jar {
     configurations["compileClasspath"].forEach { file: File ->
         from(zipTree(file.absoluteFile))
     }
+    configurations["runtimeClasspath"].forEach { file: File ->
+        from(zipTree(file.absoluteFile))
+    }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
