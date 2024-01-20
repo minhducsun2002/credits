@@ -45,6 +45,7 @@ suspend fun onMessage(e: MessageCreateEvent) {
                 provider.forEach {
                     launch {
                         val name = it.getProviderName()
+                        println("${message.id} : fetching $name")
                         val rate = it.getExchangeRate("USD")
                         val fee = it.getFee("USD")
                         val minimum = it.getMinimumFee("USD")
@@ -55,6 +56,7 @@ suspend fun onMessage(e: MessageCreateEvent) {
                         if (minimum != 0) {
                             line += " `(!)`"
                         }
+                        println("${message.id} : finished $name")
                         lines.add(Pair(line, total))
                     }
                 }
