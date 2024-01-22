@@ -24,7 +24,7 @@ class VTBProvider : ICurrencyProvider {
                     exchRate = it.replace(",", "").toInt()
                 }
             }
-            .onOpenTag out@{ name, attributes, isImplied ->
+            .onOpenTag out@{ name, attributes, _ ->
                 if (!isCurrency) {
                     return@out
                 }

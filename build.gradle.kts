@@ -28,7 +28,7 @@ dependencies {
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     implementation("com.mohamedrejeb.ksoup:ksoup-html:0.1.4")
     implementation("com.github.kittinunf.fuel:fuel:3.0.0-alpha1")
-
+    implementation("com.squareup.okhttp3:okhttp:3.2.0")
 }
 
 tasks.test {
